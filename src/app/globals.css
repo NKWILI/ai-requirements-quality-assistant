@@ -1,26 +1,33 @@
 @import "tailwindcss";
 
+/* Scholar Clean — Variante A: helles Design, ruhige Flächen, violetter Akzent */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #eef0f6;
+  --surface: #ffffff;
+  --surface-muted: #f7f8fb;
+  --foreground: #1e2233;
+  --muted: #6b7280;
+  --border: #e6e8f0;
+  --accent: #5b50e8;
+  --accent-hover: #4c41d6;
+  --accent-soft: #eceaff;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
