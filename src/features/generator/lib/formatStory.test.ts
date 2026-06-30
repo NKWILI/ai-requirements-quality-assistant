@@ -17,6 +17,12 @@ describe("formatStoryForClipboard", () => {
     expect(text).toContain("3. Drei");
   });
 
+  it("includes the quality score", () => {
+    const story = buildUserStory("Stichpunkte eingeben\nErgebnis kopieren");
+    const text = formatStoryForClipboard(story);
+    expect(text).toContain(`Qualitätsscore: ${story.qualityScore}%`);
+  });
+
   it("produces no leading or trailing blank lines", () => {
     const story = buildUserStory("Eins\nZwei");
     const text = formatStoryForClipboard(story);

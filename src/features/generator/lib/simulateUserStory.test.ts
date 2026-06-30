@@ -3,6 +3,7 @@ import {
   parseBullets,
   buildUserStory,
   simulateUserStory,
+  computeQualityScore,
 } from "./simulateUserStory";
 
 describe("parseBullets", () => {
@@ -57,6 +58,48 @@ describe("buildUserStory", () => {
     const a = buildUserStory("Stichpunkte eingeben\nErgebnis kopieren");
     const b = buildUserStory("Stichpunkte eingeben\nErgebnis kopieren");
     expect(a).toEqual(b);
+  });
+
+  it("attaches an integer quality score between 0 and 100", () => {
+    const story = buildUserStory("Stichpunkte eingeben\nErgebnis kopieren");
+    expect(Number.isInteger(story.qualityScore)).toBe(true);
+    expect(story.qualityScore).toBeGreaterThanOrEqual(0);
+    expect(story.qualityScore).toBeLessThanOrEqual(100);
+  });
+});
+
+describe("computeQualityScore", () => {
+  it("stays within 0 and 100 for extreme inputs", () => {
+    const low = computeQualityScore({
+      bulletCount: 0,
+      goalWordCount: 0,
+      hasExplicitBenefit: false,
+      maxBulletWords: 0,
+    });
+    const high = computeQualityScore({
+      bulletCount: 12,
+      goalWordCount: 12,
+      hasExplicitBenefit: true,
+      maxBulletWords: 12,
+    });
+    expect(low).toBeGreaterThanOrEqual(0);
+    expect(high).toBeLessThanOrEqual(100);
+  });
+
+  it("rewards richer, more detailed input", () => {
+    const minimal = computeQualityScore({
+      bulletCount: 1,
+      goalWordCount: 1,
+      hasExplicitBenefit: false,
+      maxBulletWords: 1,
+    });
+    const rich = computeQualityScore({
+      bulletCount: 3,
+      goalWordCount: 3,
+      hasExplicitBenefit: true,
+      maxBulletWords: 5,
+    });
+    expect(rich).toBeGreaterThan(minimal);
   });
 });
 

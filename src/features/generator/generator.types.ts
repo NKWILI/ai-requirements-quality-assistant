@@ -8,6 +8,8 @@ export interface UserStory {
   role: string;
   goal: string;
   benefit: string;
+  /** Simulated AI confidence in the story quality, 0–100. */
+  qualityScore: number;
   /** One acceptance criterion per input bullet. */
   acceptanceCriteria: string[];
 }

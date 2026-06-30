@@ -48,6 +48,31 @@ function toBenefit(bullets: string[]): string {
   return "der Arbeitsablauf effizienter wird";
 }
 
+function wordCount(text: string): number {
+  return text.split(/\s+/).filter(Boolean).length;
+}
+
+export interface QualityFactors {
+  bulletCount: number;
+  goalWordCount: number;
+  hasExplicitBenefit: boolean;
+  maxBulletWords: number;
+}
+
+/**
+ * Deterministic "AI" quality score. Rewards stories that come from richer,
+ * more detailed input (several bullets, a substantial goal, an explicit
+ * benefit). Clamped so the demo never claims a perfect score.
+ */
+export function computeQualityScore(factors: QualityFactors): number {
+  let score = 50;
+  score += Math.min(factors.bulletCount, 4) * 5;
+  if (factors.hasExplicitBenefit) score += 8;
+  if (factors.goalWordCount >= 2) score += 5;
+  if (factors.maxBulletWords >= 4) score += 5;
+  return Math.max(30, Math.min(98, Math.round(score)));
+}
+
 /** Build a deterministic user story from raw bullet input. */
 export function buildUserStory(input: string): UserStory {
   const bullets = parseBullets(input);
@@ -60,8 +85,14 @@ export function buildUserStory(input: string): UserStory {
   const benefit = toBenefit(bullets);
   const title = `Als ${role} möchte ich ${lowerFirst(goal)}, damit ${benefit}.`;
   const acceptanceCriteria = bullets.map((bullet) => upperFirst(bullet));
+  const qualityScore = computeQualityScore({
+    bulletCount: bullets.length,
+    goalWordCount: wordCount(goal),
+    hasExplicitBenefit: bullets.length > 1,
+    maxBulletWords: Math.max(...bullets.map(wordCount)),
+  });
 
-  return { title, role, goal, benefit, acceptanceCriteria };
+  return { title, role, goal, benefit, qualityScore, acceptanceCriteria };
 }
 
 export interface SimulateOptions {

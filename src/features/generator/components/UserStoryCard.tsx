@@ -8,7 +8,33 @@ type Props = {
   story: UserStory;
 };
 
-/** Renders a generated user story, its criteria, and a copy action. Context-blind. */
+function scoreColor(score: number): string {
+  if (score >= 75) return "text-success";
+  if (score >= 50) return "text-warning";
+  return "text-danger";
+}
+
+/** A role/goal/benefit phrase highlighted inside the generated sentence. */
+function Highlight({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="rounded bg-highlight px-1 py-0.5 font-medium text-foreground">
+      {children}
+    </span>
+  );
+}
+
+function Component({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-border bg-surface p-4">
+      <p className="text-xs font-semibold uppercase tracking-wide text-accent">
+        {label}
+      </p>
+      <p className="mt-1.5 text-sm leading-relaxed text-foreground">{value}</p>
+    </div>
+  );
+}
+
+/** Renders a generated user story, its score, components and a copy action. Context-blind. */
 export function UserStoryCard({ story }: Props) {
   const [copied, setCopied] = useState(false);
 
@@ -24,14 +50,17 @@ export function UserStoryCard({ story }: Props) {
 
   return (
     <article className="flex flex-col gap-5">
-      <div className="flex items-start justify-between gap-3 rounded-2xl border border-border bg-surface-muted p-5">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-accent">
-            User Story
-          </p>
-          <p className="mt-2 text-lg font-semibold leading-relaxed text-foreground">
-            {story.title}
-          </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="inline-flex items-center gap-1 rounded-full border border-success/40 bg-success-soft px-3 py-1 text-xs font-semibold text-success">
+            ✓ Generiert
+          </span>
+          <span className="text-sm text-muted">
+            Qualitätsscore:{" "}
+            <strong className={`font-bold ${scoreColor(story.qualityScore)}`}>
+              {story.qualityScore}%
+            </strong>
+          </span>
         </div>
         <button
           type="button"
@@ -41,6 +70,28 @@ export function UserStoryCard({ story }: Props) {
         >
           {copied ? "Kopiert ✓" : "Ergebnis kopieren"}
         </button>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-accent-soft/50 p-5">
+        <p className="text-xs font-semibold uppercase tracking-wide text-accent">
+          Generierte User Story
+        </p>
+        <p className="mt-3 text-lg leading-relaxed text-foreground">
+          Als <Highlight>{story.role}</Highlight> möchte ich{" "}
+          <Highlight>{story.goal}</Highlight>, damit{" "}
+          <Highlight>{story.benefit}</Highlight>.
+        </p>
+      </div>
+
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+          Story-Komponenten
+        </p>
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          <Component label="Rolle" value={story.role} />
+          <Component label="Ziel" value={story.goal} />
+          <Component label="Nutzen" value={story.benefit} />
+        </div>
       </div>
 
       <div>

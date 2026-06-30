@@ -5,6 +5,8 @@ export function formatStoryForClipboard(story: UserStory): string {
   const lines = [
     story.title,
     "",
+    `Qualitätsscore: ${story.qualityScore}%`,
+    "",
     "Akzeptanzkriterien:",
     ...story.acceptanceCriteria.map(
       (criterion, index) => `${index + 1}. ${criterion}`,
