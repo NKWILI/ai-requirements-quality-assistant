@@ -6,6 +6,8 @@ import { TabSwitcher, type TabId } from "@/components/TabSwitcher";
 import { useGenerator } from "./GeneratorProvider";
 import { GeneratorInput } from "./components/GeneratorInput";
 import { ResultPanel } from "./components/ResultPanel";
+// 1. TON IMPORT : On relie ton nouveau fichier ici
+import Evaluator from "./components/Evaluator";
 
 /**
  * The bridge layer: the only file allowed to read the Generator context.
@@ -25,25 +27,31 @@ export function GeneratorContainer() {
           onSelect={setActiveTab}
           tabs={[
             { id: "generator", label: "Generator" },
-            { id: "evaluator", label: "Evaluator", disabled: true },
+            // 2. ONGLET DÉBLOQUÉ : On a retiré le `disabled: true`
+            { id: "evaluator", label: "Evaluator" },
           ]}
         />
       }
     >
-      <div className="grid gap-px bg-border md:grid-cols-2">
-        <div className="bg-surface p-6">
-          <GeneratorInput
-            value={input}
-            onChange={setInput}
-            onSubmit={generate}
-            loading={loading}
-            disabled={loading || isEmpty}
-          />
+      {/* 3. LOGIQUE D'AFFICHAGE : Generator (Alain) ou Evaluator (Toi) */}
+      {activeTab === "generator" ? (
+        <div className="grid gap-px bg-border md:grid-cols-2">
+          <div className="bg-surface p-6">
+            <GeneratorInput
+              value={input}
+              onChange={setInput}
+              onSubmit={generate}
+              loading={loading}
+              disabled={loading || isEmpty}
+            />
+          </div>
+          <div className="min-h-[24rem] bg-surface p-6">
+            <ResultPanel status={status} story={story} />
+          </div>
         </div>
-        <div className="min-h-[24rem] bg-surface p-6">
-          <ResultPanel status={status} story={story} />
-        </div>
-      </div>
+      ) : (
+        <Evaluator />
+      )}
     </ArqaCard>
   );
 }
