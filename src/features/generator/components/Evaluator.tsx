@@ -23,11 +23,12 @@ const SUGGESTIONS = [
 
 /* --- INVEST CARD SUB-COMPONENT --- */
 const InvestCard = ({ criterion }: { criterion: any }) => {
-    const styles: any = {
+    const styleMap: Record<string, { bg: string; border: string; text: string }> = {
         success: { bg: "bg-emerald-100", border: "border-emerald-200", text: "text-emerald-600" },
         warning: { bg: "bg-amber-100", border: "border-amber-200", text: "text-amber-600" },
         danger: { bg: "bg-rose-100", border: "border-rose-200", text: "text-rose-600" }
-    }[criterion.status];
+    };
+    const styles = styleMap[criterion.status];
 
     return (
         <div className={`bg-white border border-${styles.border.split('-')[1]}/40 rounded-xl p-3 flex flex-col justify-between shadow-sm`}>
