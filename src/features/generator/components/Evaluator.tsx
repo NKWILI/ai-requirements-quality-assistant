@@ -4,25 +4,12 @@ import React, { useState } from "react";
 import {
     CheckCircle2, Info, Check, ThumbsUp, ThumbsDown
 } from "lucide-react";
+import type { Evaluation, InvestCriterion } from "../generator.types";
 
-/* --- INVEST DATA --- */
-const INVEST_CRITERIA = [
-    { id: "I", name: "Independent", score: "80%", status: "success", desc: "Die Story ist eigenständig und kann unabhängig von anderen umgesetzt werden." },
-    { id: "N", name: "Negotiable", score: "55%", status: "warning", desc: "Grundlegend verhandelbar, aber Implementierungsdetails könnten offener sein." },
-    { id: "V", name: "Valuable", score: "45%", status: "danger", desc: '"Die App nutzen" ist zu vage — kein konkreter Mehrwert erkennbar.' },
-    { id: "E", name: "Estimable", score: "60%", status: "warning", desc: "Schätzbar, aber fehlende Details erschweren präzise Aufwandsermittlung." },
-    { id: "S", name: "Small", score: "75%", status: "success", desc: "Angemessener Umfang — innerhalb eines Sprints umsetzbar." },
-    { id: "T", name: "Testable", score: "40%", status: "danger", desc: 'Keine Akzeptanzkriterien — unklar, wann die Story als "done" gilt.' }
-];
-
-const SUGGESTIONS = [
-    "Nutzerrolle konkretisieren: \"registrierter Nutzer\" statt generisch \"Nutzer\"",
-    "Nutzenformulierung verbessern: Was ermöglicht der Login konkret?",
-    "Mindestens 3 messbare Akzeptanzkriterien hinzufügen"
-];
+const SAMPLE_STORY = "Als Nutzer möchte ich mich einloggen, damit ich die App nutzen kann.";
 
 /* --- INVEST CARD SUB-COMPONENT --- */
-const InvestCard = ({ criterion }: { criterion: any }) => {
+const InvestCard = ({ criterion }: { criterion: InvestCriterion }) => {
     const styleMap: Record<string, { bg: string; border: string; text: string }> = {
         success: { bg: "bg-emerald-100", border: "border-emerald-200", text: "text-emerald-600" },
         warning: { bg: "bg-amber-100", border: "border-amber-200", text: "text-amber-600" },
@@ -39,21 +26,45 @@ const InvestCard = ({ criterion }: { criterion: any }) => {
                     </span>
                     <span className="text-xs font-bold text-slate-700">{criterion.name}</span>
                 </div>
-                <span className={`${styles.text} font-bold text-xs`}>{criterion.score}</span>
+                <span className={`${styles.text} font-bold text-xs`}>{criterion.score}%</span>
             </div>
-            <p className="text-[10px] text-slate-500 leading-normal">{criterion.desc}</p>
+            <p className="text-[10px] text-slate-500 leading-normal">{criterion.reason}</p>
         </div>
     );
 };
 
 /* --- MAIN EVALUATOR COMPONENT --- */
+type Status = "idle" | "analyzing" | "success";
+
 export default function Evaluator() {
-    const [status, setStatus] = useState("idle");
+    const [story, setStory] = useState(SAMPLE_STORY);
+    const [status, setStatus] = useState<Status>("idle");
+    const [result, setResult] = useState<Evaluation | null>(null);
+    const [error, setError] = useState<string | null>(null);
     const [feedback, setFeedback] = useState<string | null>(null);
 
-    const handleAction = () => {
+    const handleAction = async () => {
+        if (story.trim().length === 0) return;
         setStatus("analyzing");
-        setTimeout(() => setStatus("success"), 2000);
+        setResult(null);
+        setError(null);
+        setFeedback(null);
+        try {
+            // Real INVEST evaluation happens server-side (/api/evaluate) so the
+            // API key stays on the server.
+            const res = await fetch("/api/evaluate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ story }),
+            });
+            if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+            const data = (await res.json()) as { evaluation: Evaluation };
+            setResult(data.evaluation);
+            setStatus("success");
+        } catch {
+            setError("Analyse fehlgeschlagen. Bitte erneut versuchen.");
+            setStatus("idle");
+        }
     };
 
     return (
@@ -75,18 +86,22 @@ export default function Evaluator() {
                         <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">User Story</h4>
                         <textarea
                             className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-slate-700 text-sm focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all resize-none leading-relaxed"
-                            defaultValue="Als Nutzer möchte ich mich einloggen, damit ich die App nutzen kann."
+                            value={story}
+                            onChange={(e) => setStory(e.target.value)}
                         />
                     </div>
                     <div className="flex items-start gap-2 bg-amber-50 border border-amber-200/60 rounded-xl p-3 text-amber-700 text-xs mb-4 shrink-0 shadow-sm">
                         <Info size={16} className="mt-0.5 shrink-0 text-amber-500" />
                         <p>Format: <span className="font-semibold">Als [Rolle] möchte ich [Ziel], damit [Nutzen].</span></p>
                     </div>
+                    {error && (
+                        <p className="text-xs text-rose-600 mb-3 shrink-0" role="alert">{error}</p>
+                    )}
                 </div>
 
                 <button
                     onClick={handleAction}
-                    disabled={status === "analyzing"}
+                    disabled={status === "analyzing" || story.trim().length === 0}
                     className="w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 rounded-xl transition-all shadow-sm disabled:opacity-50 text-sm shrink-0"
                 >
                     {status === "analyzing" ? "Analysiere..." : "INVEST-Analyse starten →"}
@@ -116,17 +131,17 @@ export default function Evaluator() {
                         </div>
                     )}
 
-                    {status === "success" && (
+                    {status === "success" && result && (
                         <div className="flex flex-col gap-4 flex-1 animate-in fade-in duration-500">
                             <div className="flex flex-col sm:flex-row gap-3 shrink-0">
                                 <div className="w-full sm:w-1/4 bg-white border border-slate-200 rounded-xl p-3 flex flex-col items-center justify-center relative overflow-hidden shadow-sm">
-                                    <span className="text-3xl font-black text-amber-500">59%</span>
+                                    <span className="text-3xl font-black text-amber-500">{result.overallScore}%</span>
                                     <span className="text-[8px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Gesamt</span>
                                 </div>
                                 <div className="w-full sm:w-3/4 bg-indigo-50/50 border border-indigo-100 rounded-xl p-3.5 shadow-sm">
                                     <h4 className="text-[9px] font-bold text-indigo-600 uppercase tracking-widest mb-1">+ Verbesserter Vorschlag</h4>
                                     <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                                        Als registrierter Nutzer möchte ich mich mit E-Mail und Passwort anmelden, damit ich auf meine persönlichen Daten und gespeicherten Einstellungen zugreifen kann.
+                                        {result.improvedStory}
                                     </p>
                                 </div>
                             </div>
@@ -134,7 +149,7 @@ export default function Evaluator() {
                             <div>
                                 <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Invest-Kriterien</h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    {INVEST_CRITERIA.map((criterion) => (
+                                    {result.criteria.map((criterion) => (
                                         <InvestCard key={criterion.id} criterion={criterion} />
                                     ))}
                                 </div>
@@ -143,7 +158,7 @@ export default function Evaluator() {
                             <div>
                                 <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Verbesserungsvorschläge</h4>
                                 <div className="flex flex-col gap-1.5">
-                                    {SUGGESTIONS.map((suggestion, index) => (
+                                    {result.suggestions.map((suggestion, index) => (
                                         <div key={index} className="bg-white border border-slate-200 rounded-xl p-2.5 flex items-start gap-2.5 shadow-sm">
                                             <span className="text-violet-500 font-bold text-xs">→</span>
                                             <span className="text-xs text-slate-600 font-medium">{suggestion}</span>

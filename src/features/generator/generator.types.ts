@@ -14,6 +14,34 @@ export interface UserStory {
   acceptanceCriteria: string[];
 }
 
+/** Traffic-light status for a single INVEST criterion. */
+export type InvestStatus = "success" | "warning" | "danger";
+
+/** One INVEST criterion with a real (0–100) score and a short rationale. */
+export interface InvestCriterion {
+  /** Single-letter id: I, N, V, E, S or T. */
+  id: string;
+  /** Full criterion name, e.g. "Independent". */
+  name: string;
+  /** Score for this criterion, 0–100. */
+  score: number;
+  status: InvestStatus;
+  /** Short German explanation of the score. */
+  reason: string;
+}
+
+/** Result of an INVEST evaluation of an existing user story. */
+export interface Evaluation {
+  /** Weighted overall INVEST score, 0–100. */
+  overallScore: number;
+  /** Exactly the six INVEST criteria, in I-N-V-E-S-T order. */
+  criteria: InvestCriterion[];
+  /** A rewritten, higher-quality version of the story. */
+  improvedStory: string;
+  /** Concrete improvement suggestions. */
+  suggestions: string[];
+}
+
 /** Value exposed by the Generator context. */
 export interface GeneratorContextValue {
   input: string;
