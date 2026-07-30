@@ -31,11 +31,26 @@ export function GeneratorProvider({ children }: { children: ReactNode }) {
     setStatus("loading");
     setStory(null);
     try {
-      const result = await simulateUserStory(input);
-      setStory(result);
+      // Real generation happens server-side (/api/generate) so the API key
+      // stays on the server. If the request fails, fall back to the local
+      // simulator so the demo keeps working.
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input }),
+      });
+      if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+      const data = (await res.json()) as { story: UserStory };
+      setStory(data.story);
       setStatus("done");
     } catch {
-      setStatus("idle");
+      try {
+        const result = await simulateUserStory(input);
+        setStory(result);
+        setStatus("done");
+      } catch {
+        setStatus("idle");
+      }
     }
   }, [input]);
 
