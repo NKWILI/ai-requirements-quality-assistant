@@ -1,4 +1,5 @@
 import type { UserStory } from "../generator.types";
+import { UnusableInputError, looksMeaningful, unusableMessage } from "./errors";
 
 /**
  * Simulated "AI". This module is the single seam where a real Claude API call
@@ -39,13 +40,16 @@ function toGoal(bullet: string): string {
   return upperFirst(bullet.replace(ROLE_VERB_PREFIX, "").trim());
 }
 
-/** Derive the "damit …" benefit clause. */
+/**
+ * Derive the "damit …" benefit clause. The simulator is only a fallback, so it
+ * deliberately uses a fixed, always-grammatical clause instead of splicing a
+ * raw bullet into the sentence (which produced broken German like
+ * "damit ich per E-Mail versenden kann").
+ */
 function toBenefit(bullets: string[]): string {
-  if (bullets.length > 1) {
-    const last = bullets[bullets.length - 1].replace(ROLE_VERB_PREFIX, "").trim();
-    return `ich ${lowerFirst(last)} kann`;
-  }
-  return "der Arbeitsablauf effizienter wird";
+  return bullets.length > 1
+    ? "der Arbeitsablauf effizienter und nachvollziehbarer wird"
+    : "der Arbeitsablauf effizienter wird";
 }
 
 function wordCount(text: string): number {
@@ -78,6 +82,9 @@ export function buildUserStory(input: string): UserStory {
   const bullets = parseBullets(input);
   if (bullets.length === 0) {
     throw new Error("Bitte mindestens einen Stichpunkt eingeben.");
+  }
+  if (!looksMeaningful(input)) {
+    throw new UnusableInputError(unusableMessage());
   }
 
   const role = detectRole(bullets);

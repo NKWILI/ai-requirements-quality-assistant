@@ -143,7 +143,9 @@ export async function evaluateWithOpenAI(
       },
       body: JSON.stringify({
         model: process.env.OPENAI_MODEL ?? DEFAULT_MODEL,
-        temperature: 0.3,
+        // Near-deterministic scoring so the Generator's inline score and a
+        // later Evaluator run on the same story stay consistent.
+        temperature: 0,
         response_format: { type: "json_object" },
         messages: [
           { role: "system", content: SYSTEM_PROMPT },

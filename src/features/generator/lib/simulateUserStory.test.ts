@@ -5,6 +5,7 @@ import {
   simulateUserStory,
   computeQualityScore,
 } from "./simulateUserStory";
+import { UnusableInputError, looksMeaningful } from "./errors";
 
 describe("parseBullets", () => {
   it("strips -, *, • markers and trims, dropping empty lines", () => {
@@ -54,6 +55,18 @@ describe("buildUserStory", () => {
     }
   });
 
+  it("rejects keyboard-mashing as unusable instead of inventing a story", () => {
+    expect(() => buildUserStory("qwrt zxcv")).toThrow(UnusableInputError);
+  });
+
+  it("keeps the benefit clause grammatical for multi-bullet input", () => {
+    // Regression: raw bullets used to be spliced in ("damit ich per E-Mail
+    // versenden kann"). The fallback now uses a fixed, grammatical clause.
+    const story = buildUserStory("Berichte exportieren\nper E-Mail versenden");
+    expect(story.benefit).toBe("der Arbeitsablauf effizienter und nachvollziehbarer wird");
+    expect(story.title).toMatch(/, damit der Arbeitsablauf .+\.$/);
+  });
+
   it("is deterministic for the same input", () => {
     const a = buildUserStory("Stichpunkte eingeben\nErgebnis kopieren");
     const b = buildUserStory("Stichpunkte eingeben\nErgebnis kopieren");
@@ -100,6 +113,15 @@ describe("computeQualityScore", () => {
       maxBulletWords: 5,
     });
     expect(rich).toBeGreaterThan(minimal);
+  });
+});
+
+describe("looksMeaningful", () => {
+  it("accepts real words and rejects symbol-only / consonant-mash input", () => {
+    expect(looksMeaningful("Berichte exportieren")).toBe(true);
+    expect(looksMeaningful("!!! ??? ...")).toBe(false);
+    expect(looksMeaningful("qwrt zxcv")).toBe(false);
+    expect(looksMeaningful("   ")).toBe(false);
   });
 });
 

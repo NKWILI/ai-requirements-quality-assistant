@@ -1,5 +1,6 @@
 import type { UserStory } from "../generator.types";
 import { buildUserStory } from "./simulateUserStory";
+import { UnusableInputError, unusableMessage } from "./errors";
 
 /**
  * Server-only bridge to the OpenAI Chat Completions API. This is the real
@@ -27,7 +28,15 @@ const SYSTEM_PROMPT = [
   "Du bist ein Assistent für Anforderungsqualität in agilen Teams.",
   "Aus stichpunktartigen Notizen formulierst du genau EINE deutsche User Story",
   'im Format "Als <Rolle> möchte ich <Ziel>, damit <Nutzen>."',
+  'Der Satz MUSS die Konjunktion "damit" verwenden — niemals "um ... zu".',
+  'Nach "damit" folgt ein vollständiger Nebensatz mit Subjekt und konjugiertem',
+  "Verb am Satzende (z.B. \"damit ich Berichte schnell teilen kann\").",
+  "Achte auf einwandfreie deutsche Grammatik und übernimm Stichpunkte nicht",
+  "wortwörtlich, sondern formuliere sie grammatikalisch korrekt aus.",
   "Leite passende, testbare Akzeptanzkriterien ab.",
+  "Wenn die Eingabe keine sinnvolle Anforderung erkennen lässt (z.B. zufällige",
+  "Zeichen, Tastaturgeklimper, sinnlose Buchstabenfolgen, leerer Inhalt), dann",
+  "setze usable=false und erfinde KEINE Story.",
   "Antworte ausschließlich mit JSON nach dem vorgegebenen Schema, ohne Erklärtext.",
 ].join(" ");
 
@@ -37,19 +46,23 @@ function buildUserPrompt(input: string): string {
     input.trim(),
     "",
     "Gib ein JSON-Objekt mit genau diesen Feldern zurück:",
-    '{ "title": string (die vollständige User Story in einem Satz),',
-    '  "role": string, "goal": string, "benefit": string,',
-    '  "qualityScore": number (0-100, deine Einschätzung der Story-Qualität),',
+    '{ "usable": boolean (false, wenn kein sinnvoller Inhalt erkennbar ist),',
+    '  "message": string (nur wenn usable=false: kurze deutsche Erklärung, was fehlt),',
+    '  "title": string (die vollständige User Story in einem Satz, MUSS ", damit" enthalten),',
+    '  "role": string, "goal": string,',
+    '  "benefit": string (nur der Nebensatz nach "damit", ohne das Wort "damit",',
+    '              mit Subjekt und Verb am Ende, z.B. "ich Berichte schnell teilen kann"),',
     '  "acceptanceCriteria": string[] (2-5 testbare Kriterien) }',
   ].join("\n");
 }
 
 interface RawStory {
+  usable?: unknown;
+  message?: unknown;
   title?: unknown;
   role?: unknown;
   goal?: unknown;
   benefit?: unknown;
-  qualityScore?: unknown;
   acceptanceCriteria?: unknown;
 }
 
@@ -57,14 +70,18 @@ function str(value: unknown, fallback = ""): string {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : fallback;
 }
 
-function clampScore(value: unknown): number {
-  const n = typeof value === "number" ? value : Number(value);
-  if (!Number.isFinite(n)) return 75;
-  return Math.max(0, Math.min(100, Math.round(n)));
-}
-
-/** Coerce the model's JSON into a well-formed UserStory, filling gaps. */
+/**
+ * Coerce the model's JSON into a well-formed UserStory, filling gaps.
+ * Throws {@link UnusableInputError} when the model flagged the input as
+ * meaningless. The quality score is intentionally left at 0 here — the route
+ * derives it from the shared INVEST evaluation so the Generator and Evaluator
+ * always agree.
+ */
 function toUserStory(raw: RawStory, input: string): UserStory {
+  if (raw.usable === false) {
+    throw new UnusableInputError(unusableMessage(str(raw.message)));
+  }
+
   // Reuse the deterministic builder for any fields the model omitted.
   const fallback = buildUserStory(input);
   const criteria = Array.isArray(raw.acceptanceCriteria)
@@ -76,7 +93,7 @@ function toUserStory(raw: RawStory, input: string): UserStory {
     role: str(raw.role, fallback.role),
     goal: str(raw.goal, fallback.goal),
     benefit: str(raw.benefit, fallback.benefit),
-    qualityScore: raw.qualityScore === undefined ? fallback.qualityScore : clampScore(raw.qualityScore),
+    qualityScore: 0, // set by the caller via the INVEST evaluation
     acceptanceCriteria: criteria.length > 0 ? criteria : fallback.acceptanceCriteria,
   };
 }

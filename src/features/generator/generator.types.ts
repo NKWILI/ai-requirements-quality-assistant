@@ -1,5 +1,5 @@
-/** Status of the (simulated) generation request. */
-export type GeneratorStatus = "idle" | "loading" | "done";
+/** Status of the generation request. */
+export type GeneratorStatus = "idle" | "loading" | "done" | "error";
 
 /** A generated user story in the German "Als … möchte ich …, damit …" format. */
 export interface UserStory {
@@ -48,6 +48,8 @@ export interface GeneratorContextValue {
   setInput: (value: string) => void;
   status: GeneratorStatus;
   story: UserStory | null;
+  /** User-facing message when status is "error" (e.g. unusable input). */
+  error: string | null;
   isEmpty: boolean;
   generate: () => Promise<void>;
   reset: () => void;

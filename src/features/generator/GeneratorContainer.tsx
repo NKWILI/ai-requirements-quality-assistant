@@ -14,7 +14,7 @@ import Evaluator from "./components/Evaluator";
  * Holds local UI state (the active tab) and arranges the Components.
  */
 export function GeneratorContainer() {
-  const { input, setInput, status, story, isEmpty, generate } = useGenerator();
+  const { input, setInput, status, story, error, isEmpty, generate } = useGenerator();
   const [activeTab, setActiveTab] = useState<TabId>("generator");
 
   const loading = status === "loading";
@@ -46,7 +46,7 @@ export function GeneratorContainer() {
             />
           </div>
           <div className="min-h-[24rem] bg-surface p-6">
-            <ResultPanel status={status} story={story} />
+            <ResultPanel status={status} story={story} error={error} />
           </div>
         </div>
       ) : (
