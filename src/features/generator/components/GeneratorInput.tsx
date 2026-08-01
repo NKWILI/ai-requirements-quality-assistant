@@ -43,7 +43,7 @@ export function GeneratorInput({
         onChange={(event) => onChange(event.target.value)}
         rows={8}
         className="resize-none rounded-2xl border border-border bg-surface-muted px-4 py-3 text-sm leading-relaxed text-foreground placeholder:text-muted focus-visible:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
-        placeholder={"- Erste Anforderung\n- Zweite Anforderung"}
+        placeholder={"- Nutzer soll Berichte exportieren\n- als PDF speichern\n- per E-Mail versenden"}
       />
 
       <button
@@ -54,10 +54,6 @@ export function GeneratorInput({
       >
         {loading ? "Generiere …" : "User Story generieren →"}
       </button>
-
-      <p className="text-center text-xs font-medium text-muted">
-        Demo-Modus · Simulierte KI-Antwort
-      </p>
     </div>
   );
 }

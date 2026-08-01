@@ -13,14 +13,8 @@ import { simulateUserStory } from "./lib/simulateUserStory";
 
 const GeneratorContext = createContext<GeneratorContextValue | null>(null);
 
-const SAMPLE_INPUT = [
-  "- Nutzer soll Stichpunkte eingeben",
-  "- Automatisch User Story generieren",
-  "- Ergebnis kopieren können",
-].join("\n");
-
 export function GeneratorProvider({ children }: { children: ReactNode }) {
-  const [input, setInput] = useState(SAMPLE_INPUT);
+  const [input, setInput] = useState("");
   const [status, setStatus] = useState<GeneratorStatus>("idle");
   const [story, setStory] = useState<UserStory | null>(null);
   const [error, setError] = useState<string | null>(null);

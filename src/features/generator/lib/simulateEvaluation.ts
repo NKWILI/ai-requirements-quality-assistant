@@ -55,7 +55,8 @@ export function buildEvaluation(story: string): Evaluation {
   if (specificRole) scores.V += 5;
 
   const criteria: InvestCriterion[] = INVEST_NAMES.map(({ id, name }) => {
-    const score = Math.max(20, Math.min(95, Math.round(scores[id])));
+    // Allow a perfect 100 so an excellent story is not artificially capped.
+    const score = Math.max(20, Math.min(100, Math.round(scores[id])));
     return { id, name, score, status: statusForScore(score), reason: reasonFor(id, score) };
   });
 
@@ -102,6 +103,7 @@ function buildSuggestions(specificRole: boolean, hasBenefit: boolean, notTestabl
   if (!specificRole) out.push('Nutzerrolle konkretisieren: "registrierter Nutzer" statt generisch "Nutzer".');
   if (!hasBenefit) out.push("Nutzenformulierung schärfen: Was ermöglicht die Story konkret?");
   if (notTestable) out.push("Mindestens 3 messbare Akzeptanzkriterien hinzufügen.");
-  if (out.length === 0) out.push("Story ist solide — kleinere Präzisierungen der Akzeptanzkriterien möglich.");
+  // No forced suggestion: an already-good story returns an empty list so the
+  // UI can show "Keine Verbesserungen nötig".
   return out;
 }

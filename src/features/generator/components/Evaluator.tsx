@@ -6,8 +6,6 @@ import {
 } from "lucide-react";
 import type { Evaluation, InvestCriterion } from "../generator.types";
 
-const SAMPLE_STORY = "Als Nutzer möchte ich mich einloggen, damit ich die App nutzen kann.";
-
 /* --- INVEST CARD SUB-COMPONENT --- */
 const InvestCard = ({ criterion }: { criterion: InvestCriterion }) => {
     const styleMap: Record<string, { bg: string; border: string; text: string }> = {
@@ -37,7 +35,7 @@ const InvestCard = ({ criterion }: { criterion: InvestCriterion }) => {
 type Status = "idle" | "analyzing" | "success";
 
 export default function Evaluator() {
-    const [story, setStory] = useState(SAMPLE_STORY);
+    const [story, setStory] = useState("");
     const [status, setStatus] = useState<Status>("idle");
     const [result, setResult] = useState<Evaluation | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -85,9 +83,10 @@ export default function Evaluator() {
                     <div className="flex-1 flex flex-col mb-4 min-h-0">
                         <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">User Story</h4>
                         <textarea
-                            className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-slate-700 text-sm focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all resize-none leading-relaxed"
+                            className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-slate-700 text-sm focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all resize-none leading-relaxed placeholder:text-slate-400"
                             value={story}
                             onChange={(e) => setStory(e.target.value)}
+                            placeholder="Als [Rolle] möchte ich [Ziel], damit [Nutzen]."
                         />
                     </div>
                     <div className="flex items-start gap-2 bg-amber-50 border border-amber-200/60 rounded-xl p-3 text-amber-700 text-xs mb-4 shrink-0 shadow-sm">
@@ -157,14 +156,21 @@ export default function Evaluator() {
 
                             <div>
                                 <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Verbesserungsvorschläge</h4>
-                                <div className="flex flex-col gap-1.5">
-                                    {result.suggestions.map((suggestion, index) => (
-                                        <div key={index} className="bg-white border border-slate-200 rounded-xl p-2.5 flex items-start gap-2.5 shadow-sm">
-                                            <span className="text-violet-500 font-bold text-xs">→</span>
-                                            <span className="text-xs text-slate-600 font-medium">{suggestion}</span>
-                                        </div>
-                                    ))}
-                                </div>
+                                {result.suggestions.length > 0 ? (
+                                    <div className="flex flex-col gap-1.5">
+                                        {result.suggestions.map((suggestion, index) => (
+                                            <div key={index} className="bg-white border border-slate-200 rounded-xl p-2.5 flex items-start gap-2.5 shadow-sm">
+                                                <span className="text-violet-500 font-bold text-xs">→</span>
+                                                <span className="text-xs text-slate-600 font-medium">{suggestion}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 flex items-start gap-2.5 shadow-sm">
+                                        <Check size={14} className="mt-0.5 shrink-0 text-emerald-600" />
+                                        <span className="text-xs text-emerald-700 font-medium">Keine Verbesserungen nötig — die Story erfüllt die INVEST-Kriterien.</span>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="mt-4 border-t border-slate-200 pt-4 flex items-center justify-between">

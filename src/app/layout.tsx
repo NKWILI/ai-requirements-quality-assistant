@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "ARQA — AI Requirements Quality Assistant",
   description:
-    "Prototyp · Demo-Modus: KI-gestützte Generierung und Bewertung von User Stories.",
+    "KI-gestützte Generierung und Bewertung von User Stories nach INVEST.",
 };
 
 export default function RootLayout({
