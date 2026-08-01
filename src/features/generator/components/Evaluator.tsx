@@ -66,11 +66,11 @@ export default function Evaluator() {
     };
 
     return (
-        <div className="flex flex-col md:flex-row flex-1 min-h-[500px] w-full bg-white font-sans rounded-b-3xl">
+        <div className="flex flex-col md:flex-row flex-1 md:min-h-[500px] w-full bg-white font-sans rounded-b-3xl">
 
             {/* LEFT COLUMN */}
             <div className="w-full md:w-1/2 p-6 lg:p-8 flex flex-col border-b md:border-b-0 md:border-r border-slate-200 bg-white">
-                <div className="flex flex-col flex-1 h-full justify-between">
+                <div className="flex flex-col flex-1 md:h-full justify-between">
                     <div className="mb-4">
                         <h3 className="text-slate-800 font-semibold flex items-center gap-2 text-sm mb-1.5">
                             <CheckCircle2 size={18} className="text-slate-400" />
@@ -83,7 +83,7 @@ export default function Evaluator() {
                     <div className="flex-1 flex flex-col mb-4 min-h-0">
                         <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">User Story</h4>
                         <textarea
-                            className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-slate-700 text-sm focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all resize-none leading-relaxed placeholder:text-slate-400"
+                            className="flex-1 min-h-[8rem] bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-slate-700 text-sm focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all resize-none leading-relaxed placeholder:text-slate-400"
                             value={story}
                             onChange={(e) => setStory(e.target.value)}
                             placeholder="Als [Rolle] möchte ich [Ziel], damit [Nutzen]."
@@ -108,8 +108,8 @@ export default function Evaluator() {
             </div>
 
             {/* RIGHT COLUMN */}
-            <div className="w-full md:w-1/2 bg-slate-50/50 relative min-h-0">
-                <div className="absolute inset-0 overflow-y-auto p-6 lg:p-8 flex flex-col">
+            <div className="w-full md:w-1/2 bg-slate-50/50 relative flex flex-col min-h-[20rem] md:min-h-0">
+                <div className="p-6 lg:p-8 flex flex-1 flex-col md:absolute md:inset-0 md:overflow-y-auto">
 
                     {status === "idle" && (
                         <div className="h-full flex flex-col items-center justify-center text-center my-auto flex-1">
