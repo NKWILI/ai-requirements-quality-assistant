@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { CheckCircle2, Info, Check } from "lucide-react";
 import type { Evaluation, InvestCriterion } from "../generator.types";
+import { useStudySession } from "../../study/StudySessionProvider";
 
 /* --- INVEST CARD SUB-COMPONENT --- */
 const InvestCard = ({ criterion }: { criterion: InvestCriterion }) => {
@@ -37,6 +38,7 @@ export default function Evaluator() {
     const [status, setStatus] = useState<Status>("idle");
     const [result, setResult] = useState<Evaluation | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const { logEvaluate } = useStudySession();
 
     const handleAction = async () => {
         if (story.trim().length === 0) return;
@@ -52,9 +54,10 @@ export default function Evaluator() {
                 body: JSON.stringify({ story }),
             });
             if (!res.ok) throw new Error(`Request failed: ${res.status}`);
-            const data = (await res.json()) as { evaluation: Evaluation };
+            const data = (await res.json()) as { evaluation: Evaluation; source?: "openai" | "simulated" };
             setResult(data.evaluation);
             setStatus("success");
+            logEvaluate({ input: story, evaluation: data.evaluation, source: data.source ?? "openai" });
         } catch {
             setError("Analyse fehlgeschlagen. Bitte erneut versuchen.");
             setStatus("idle");

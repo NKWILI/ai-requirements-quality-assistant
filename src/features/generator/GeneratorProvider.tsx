@@ -10,6 +10,7 @@ import {
 } from "react";
 import type { GeneratorContextValue, GeneratorStatus, UserStory } from "./generator.types";
 import { simulateUserStory } from "./lib/simulateUserStory";
+import { useStudySession } from "../study/StudySessionProvider";
 
 const GeneratorContext = createContext<GeneratorContextValue | null>(null);
 
@@ -18,6 +19,7 @@ export function GeneratorProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<GeneratorStatus>("idle");
   const [story, setStory] = useState<UserStory | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { logGenerate } = useStudySession();
 
   const isEmpty = useMemo(() => input.trim().length === 0, [input]);
 
@@ -45,14 +47,16 @@ export function GeneratorProvider({ children }: { children: ReactNode }) {
       }
       if (!res.ok) throw new Error(`Request failed: ${res.status}`);
 
-      const data = (await res.json()) as { story: UserStory };
+      const data = (await res.json()) as { story: UserStory; source?: "openai" | "simulated" };
       setStory(data.story);
       setStatus("done");
+      logGenerate({ input, story: data.story, source: data.source ?? "openai" });
     } catch {
       // Network / server error only — fall back to the local simulator.
       try {
         const result = await simulateUserStory(input);
         setStory(result);
+        logGenerate({ input, story: result, source: "simulated" });
         setStatus("done");
       } catch (fallbackErr) {
         setError(
@@ -63,7 +67,7 @@ export function GeneratorProvider({ children }: { children: ReactNode }) {
         setStatus("error");
       }
     }
-  }, [input]);
+  }, [input, logGenerate]);
 
   const reset = useCallback(() => {
     setStory(null);
