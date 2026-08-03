@@ -9,7 +9,7 @@ type Props = {
 };
 
 function scoreColor(score: number): string {
-  if (score >= 75) return "text-success";
+  if (score >= 80) return "text-success";
   if (score >= 50) return "text-warning";
   return "text-danger";
 }

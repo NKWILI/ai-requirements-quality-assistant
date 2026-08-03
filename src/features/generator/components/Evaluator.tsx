@@ -30,6 +30,13 @@ const InvestCard = ({ criterion }: { criterion: InvestCriterion }) => {
     );
 };
 
+/** Colour for the overall score number: green from 80%, amber from 50%, else red. */
+function overallScoreColor(score: number): string {
+    if (score >= 80) return "text-emerald-500";
+    if (score >= 50) return "text-amber-500";
+    return "text-rose-500";
+}
+
 /* --- MAIN EVALUATOR COMPONENT --- */
 type Status = "idle" | "analyzing" | "success";
 
@@ -133,7 +140,7 @@ export default function Evaluator() {
                         <div className="flex flex-col gap-4 flex-1 animate-in fade-in duration-500">
                             <div className="flex flex-col sm:flex-row gap-3 shrink-0">
                                 <div className="w-full sm:w-1/4 bg-white border border-slate-200 rounded-xl p-3 flex flex-col items-center justify-center relative overflow-hidden shadow-sm">
-                                    <span className="text-3xl font-black text-amber-500">{result.overallScore}%</span>
+                                    <span className={`text-3xl font-black ${overallScoreColor(result.overallScore)}`}>{result.overallScore}%</span>
                                     <span className="text-[8px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Gesamt</span>
                                 </div>
                                 <div className="w-full sm:w-3/4 bg-indigo-50/50 border border-indigo-100 rounded-xl p-3.5 shadow-sm">
