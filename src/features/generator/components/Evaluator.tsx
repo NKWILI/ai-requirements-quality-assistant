@@ -1,9 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-    CheckCircle2, Info, Check, ThumbsUp, ThumbsDown
-} from "lucide-react";
+import { CheckCircle2, Info, Check } from "lucide-react";
 import type { Evaluation, InvestCriterion } from "../generator.types";
 
 /* --- INVEST CARD SUB-COMPONENT --- */
@@ -39,14 +37,12 @@ export default function Evaluator() {
     const [status, setStatus] = useState<Status>("idle");
     const [result, setResult] = useState<Evaluation | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const [feedback, setFeedback] = useState<string | null>(null);
 
     const handleAction = async () => {
         if (story.trim().length === 0) return;
         setStatus("analyzing");
         setResult(null);
         setError(null);
-        setFeedback(null);
         try {
             // Real INVEST evaluation happens server-side (/api/evaluate) so the
             // API key stays on the server.
@@ -171,18 +167,6 @@ export default function Evaluator() {
                                         <span className="text-xs text-emerald-700 font-medium">Keine Verbesserungen nötig — die Story erfüllt die INVEST-Kriterien.</span>
                                     </div>
                                 )}
-                            </div>
-
-                            <div className="mt-4 border-t border-slate-200 pt-4 flex items-center justify-between">
-                                <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">HCI Study Feedback:</p>
-                                <div className="flex gap-1.5">
-                                    <button onClick={() => setFeedback("up")} className={`p-1.5 rounded-lg border transition-all ${feedback === "up" ? "bg-emerald-50 text-emerald-600 border-emerald-300" : "bg-white border-slate-200 text-slate-400 hover:text-slate-600 hover:bg-slate-50"}`}>
-                                        <ThumbsUp size={14} />
-                                    </button>
-                                    <button onClick={() => setFeedback("down")} className={`p-1.5 rounded-lg border transition-all ${feedback === "down" ? "bg-rose-50 text-rose-600 border-rose-300" : "bg-white border-slate-200 text-slate-400 hover:text-slate-600 hover:bg-slate-50"}`}>
-                                        <ThumbsDown size={14} />
-                                    </button>
-                                </div>
                             </div>
                         </div>
                     )}
